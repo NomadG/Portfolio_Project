@@ -40,8 +40,8 @@ SELECT
 	location, 
 	date,
 	population,
-	total_cases,
-	(total_cases/population) * 100 AS covid_percentage 
+	CAST(total_cases AS FLOAT),
+	(Cast(total_cases AS FLOAT)/population) * 100 AS covid_percentage 
 FROM portfolio_project..covid_deaths
 WHERE continent IS NULL
 --WHERE location = 'india'
@@ -52,8 +52,8 @@ ORDER BY 1,2;
 SELECT 
 	location, 
 	MAX(population) AS population,
-	isnull(Max(total_cases),0) AS highest_infection_rate,
-	isnull((max(total_cases)/population), 0) * 100 AS covid_percentage 
+	isnull(Max(CAST(total_cases AS FLOAT)),0) AS highest_infection_rate,
+	isnull((max(CAST(total_cases AS FLOAT))/population), 0) * 100 AS covid_percentage 
 FROM portfolio_project..covid_deaths
 WHERE continent IS NOT NULL
 GROUP BY location, population
@@ -63,7 +63,7 @@ ORDER BY 4 DESC;
 --5 Showing the countries with highest death count irrespective of population
 SELECT 
 	location, 
-	MAX(CAST(total_deaths AS INT)) AS total_death_count 
+	MAX(CAST(total_deaths AS FLOAT)) AS total_death_count 
 FROM portfolio_project..covid_deaths
 WHERE continent IS NOT NULL
 GROUP BY location
@@ -73,8 +73,8 @@ ORDER BY 2 DESC;
 SELECT 
 	location, 
 	MAX(population) AS population,
-	isnull(Max(total_deaths),0) AS highest_death_rate,
-	isnull((max(total_deaths)/population), 0) * 100 AS death_percentage 
+	isnull(Max(CAST(total_deaths AS INT)),0) AS highest_death_rate,
+	isnull((max(CAST(total_deaths AS INT))/population), 0) * 100 AS death_percentage 
 FROM portfolio_project..covid_deaths
 WHERE continent IS NOT NULL
 GROUP BY location, population
@@ -114,11 +114,11 @@ ORDER BY 1;
 
 --9 death percentage across the world 
 SELECT
-	sum(cast(new_cases as int)) AS total_cases,
+	sum(cast(new_cases as float)) AS total_cases,
 	sum(cast(new_deaths as float)) AS total_deaths,
 	CASE
 	WHEN sum(new_cases) = 0 then NULL 
-	ELSE sum(CONVERT(int,new_deaths))/sum(new_cases) * 100 
+	ELSE sum(CONVERT(float,new_deaths))/sum(new_cases) * 100 
 	END AS death_percentage
 FROM portfolio_project..covid_deaths
 WHERE continent IS NOT NULL 
@@ -253,3 +253,13 @@ SELECT
 	(rolling_people_vaccinated/population) *100 AS vaccinated_rate
 FROM #peoplevaccinated
 ORDER BY 2,3;
+
+
+--looking at europian figures 
+SELECT 
+	location,
+	sum(CAST(new_deaths AS int)) AS total_death_count
+FROM portfolio_project..covid_deaths
+WHERE continent IS NULL 
+AND location IN ('NORTH AMERICA', 'SOUTH AMERICA', 'ASIA', 'AFRICA', 'EUROPE', 'OCEANIA')
+GROUP BY location;
